@@ -1,23 +1,50 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import TaskList from "./components/Tasklist";
+import TaskForm from "./components/Taskform";
+
+console.log("TaskList:", TaskList);
+console.log("TaskForm:", TaskForm);
 
 function App() {
+  const [tasks, setTasks] = useState([]);
+
+  const loadTasks = async () => {
+    const res = await axios.get("http://localhost:8080/tasks");
+    setTasks(res.data);
+  };
+
+  useEffect(() => {
+    loadTasks();
+  }, []);
+
+  const addTask = async (title) => {
+    await axios.post("http://localhost:8080/tasks", {
+      title: title,
+      completed: false,
+    });
+    loadTasks();
+  };
+
+  const deleteTask = async (id) => {
+    await axios.delete(`http://localhost:8080/tasks/${id}`);
+    loadTasks();
+  };
+
+  const completeTask = async (id) => {
+    await axios.post(`http://localhost:8080/tasks/${id}/complete`);
+    loadTasks();
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1>Task Manager</h1>
+      <TaskForm addTask={addTask} />
+      <TaskList
+        tasks={tasks}
+        deleteTask={deleteTask}
+        completeTask={completeTask}
+      />
     </div>
   );
 }
